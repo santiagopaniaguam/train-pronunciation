@@ -32,7 +32,7 @@ A simple, lightweight web application to help you practice pronouncing difficult
 1. Clone or download this repository
 2. Make the deployment script executable:
    ```bash
-   chmod +x deploy.sh
+   chmod +x start.sh
    ```
 3. Double click the file named "start".
 
