@@ -1,0 +1,874 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pronunciation Practice</title>
+    <style>
+        :root {
+    --bg-gradient-start: #002E5D; /* Midnight Blue */
+    --bg-gradient-end: #0052A2;  /* USAFA Blue */
+    --container-bg: #cfe2f3;
+    --text-primary: #1a202c;
+    --text-secondary: #718096;
+    --word-color: #002E5D; /* Midnight blue for high contrast */
+    --info-bg: #f7fafc;
+    --shadow: rgba(0, 0, 0, 0.1);
+    --shadow-hover: rgba(0, 0, 0, 0.15);
+}
+
+        body.dark-mode {
+            --bg-gradient-start: #1a202c;
+            --bg-gradient-end: #2d3748;
+            --container-bg: #2d3748;
+            --text-primary: #f7fafc;
+            --text-secondary: #cbd5e0;
+            --word-color: #90cdf4;
+            --info-bg: #1a202c;
+            --shadow: rgba(0, 0, 0, 0.4);
+            --shadow-hover: rgba(0, 0, 0, 0.6);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 2rem;
+            min-height: 100vh;
+            background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+            transition: background 0.3s ease;
+            padding: 2rem;
+        }
+
+        .container {
+            background: var(--container-bg);
+            padding: 3rem;
+            border-radius: 24px;
+            box-shadow: 0 24px 80px var(--shadow);
+            text-align: center;
+            max-width: 600px;
+            width: 90%;
+            position: relative;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar {
+            background: var(--container-bg);
+            padding: 2rem;
+            border-radius: 24px;
+            box-shadow: 0 24px 80px var(--shadow);
+            max-width: 300px;
+            width: 100%;
+            max-height: 80vh;
+            overflow-y: auto;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .sidebar h2 {
+            color: var(--text-primary);
+            font-size: 1.3rem;
+            margin: 0;
+            font-weight: 700;
+        }
+
+        .clear-all-btn {
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+            color: white;
+            border: none;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            box-shadow: 0 2px 8px var(--shadow);
+        }
+
+        .clear-all-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px var(--shadow-hover);
+        }
+
+        .clear-all-btn:active {
+            transform: translateY(0);
+        }
+
+        .clear-all-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .sidebar-empty {
+            color: var(--text-secondary);
+            font-style: italic;
+            font-size: 0.9rem;
+            margin-top: 1rem;
+        }
+
+        .skipped-word {
+            background: var(--info-bg);
+            padding: 0.8rem 1rem;
+            margin: 0.5rem 0;
+            border-radius: 8px;
+            color: var(--text-primary);
+            font-weight: 500;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+
+        .skipped-word:hover {
+            transform: translateX(5px);
+        }
+
+        .skipped-word button {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            cursor: pointer;
+            font-size: 1.2rem;
+            padding: 1rem 0.5rem;
+            transition: all 0.2s ease;
+	    
+        }
+
+        .skipped-word button:hover {
+            color: #f56565;
+            transform: scale(1.2);
+        }
+
+        .theme-toggle, .sound-toggle {
+            position: absolute;
+            top: 1.5rem;
+            background: var(--info-bg);
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        .theme-toggle {
+            right: 1.5rem;
+        }
+
+        .sound-toggle {
+            right: 5rem;
+        }
+
+        .theme-toggle:hover, .sound-toggle:hover {
+            transform: scale(1.1) rotate(15deg);
+            box-shadow: 0 6px 20px var(--shadow-hover);
+        }
+
+        .sound-toggle.muted {
+            opacity: 0.5;
+        }
+
+        h1 {
+            color: var(--text-primary);
+            margin-bottom: 2rem;
+            font-size: 2.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            transition: color 0.3s ease;
+        }
+
+        .word-display {
+            font-size: 4.5rem;
+            font-weight: 800;
+            color: var(--word-color);
+            margin: 2.5rem 0;
+            min-height: 6rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            letter-spacing: -1px;
+            transition: all 0.3s ease;
+            text-shadow: 0 2px 10px rgba(102, 126, 234, 0.1);
+        }
+
+        .word-display.pulsing {
+            animation: soundPulse 0.1s ease-in-out;
+        }
+
+        @keyframes soundPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+
+        .controls {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            margin: 2rem 0;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 1.2rem 2.5rem;
+            font-size: 1.1rem;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 600;
+            box-shadow: 0 4px 12px var(--shadow);
+        }
+
+        #recordBtn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        #recordBtn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px var(--shadow-hover);
+        }
+
+        #recordBtn:active {
+            transform: translateY(-1px);
+        }
+
+        #recordBtn.recording {
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+            animation: pulse 1.5s infinite;
+        }
+
+        #nextBtn {
+            background: linear-gradient(135deg, #48bb78 0%, #38a169 100%);
+            color: white;
+        }
+
+        #nextBtn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px var(--shadow-hover);
+        }
+
+        #nextBtn:active {
+            transform: translateY(-1px);
+        }
+
+        #helpBtn {
+            background: linear-gradient(135deg, #ed8936 0%, #dd6b20 100%);
+            color: white;
+        }
+
+        #helpBtn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px var(--shadow-hover);
+        }
+
+        #helpBtn:active {
+            transform: translateY(-1px);
+        }
+
+        #helpBtn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .feedback {
+            margin-top: 1.5rem;
+            font-size: 1.3rem;
+            min-height: 2rem;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        .feedback.correct {
+            color: #48bb78;
+            animation: slideIn 0.3s ease, celebrate 0.6s ease;
+        }
+
+        .feedback.incorrect {
+            color: #f56565;
+            animation: slideIn 0.3s ease;
+        }
+
+        .word-display.celebrate {
+            animation: celebrateWord 0.6s ease;
+        }
+
+        .heard {
+            margin-top: 1rem;
+            color: var(--text-secondary);
+            font-style: italic;
+            font-size: 1rem;
+            transition: color 0.3s ease;
+        }
+
+        .info {
+            margin-top: 2rem;
+            padding: 1.2rem;
+            background: var(--info-bg);
+            border-radius: 12px;
+            color: var(--text-secondary);
+            font-size: 0.95rem;
+            line-height: 1.6;
+            transition: all 0.3s ease;
+        }
+
+        .mode-selector {
+            display: flex;
+            gap: 0.5rem;
+            justify-content: center;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+
+        .mode-btn {
+            padding: 0.7rem 1.5rem;
+            font-size: 0.95rem;
+            border: 2px solid var(--word-color);
+            background: transparent;
+            color: var(--word-color);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 600;
+        }
+
+        .mode-btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .mode-btn.active {
+            background: var(--word-color);
+            color: white;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.8; transform: scale(1.02); }
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @keyframes celebrate {
+            0%, 100% { transform: scale(1); }
+            25% { transform: scale(1.1); }
+            50% { transform: scale(0.95); }
+            75% { transform: scale(1.05); }
+        }
+
+        @keyframes celebrateWord {
+            0%, 100% { transform: scale(1) rotate(0deg); }
+            25% { transform: scale(1.15) rotate(-3deg); }
+            50% { transform: scale(1.1) rotate(3deg); }
+            75% { transform: scale(1.15) rotate(-2deg); }
+        }
+
+        @media (max-width: 1200px) {
+            body {
+                flex-direction: column;
+            }
+
+            .sidebar {
+                max-width: 600px;
+                max-height: 300px;
+                order: 2;
+            }
+
+            .container {
+                order: 1;
+            }
+        }
+
+        @media (max-width: 600px) {
+            .container {
+                padding: 2rem;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .word-display {
+                font-size: 3rem;
+                min-height: 4rem;
+            }
+
+            button {
+                padding: 1rem 2rem;
+                font-size: 1rem;
+            }
+
+            .sidebar {
+                padding: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <button class="sound-toggle" id="soundToggle">🔊</button>
+        <button class="theme-toggle" id="themeToggle">🌙</button>
+        <h1>Pronunciation Practice</h1>
+        <div class="mode-selector">
+            <button class="mode-btn active" data-mode="beginner">Beginner</button>
+            <button class="mode-btn" data-mode="intermediate">Intermediate</button>
+            <button class="mode-btn" data-mode="advanced">Advanced</button>
+        </div>
+        <div class="word-display" id="wordDisplay">Click "Next Word" to start</div>
+        <div class="controls">
+            <button id="recordBtn">🎤 Record <span style="opacity: 0.7; font-size: 0.9rem;">(Space)</span></button>
+            <button id="helpBtn" disabled>🔍 How to pronounce?</button>
+            <button id="nextBtn">Next Word <span style="opacity: 0.7; font-size: 0.9rem;">(Enter)</span></button>
+        </div>
+        <div class="feedback" id="feedback"></div>
+        <div class="heard" id="heard"></div>
+        <div class="info">
+            Click the microphone button and say the word. The app will check if you pronounced it correctly.
+        </div>
+    </div>
+
+    <div class="sidebar">
+        <div class="sidebar-header">
+            <h2>Skipped Words</h2>
+            <button class="clear-all-btn" id="clearAllBtn" disabled>Clear All</button>
+        </div>
+        <div id="skippedList" class="sidebar-empty">No words skipped yet</div>
+    </div>
+
+    <script>
+        // Beginner: IPA keyword examples for common English phonemes
+        const beginnerWords = [
+            'sheep', 'ship', 'beat', 'bit', 'boot', 'book', 'bird', 'bat',
+            'bet', 'but', 'bought', 'boat', 'about', 'father', 'cat', 'caught',
+            'pie', 'boy', 'cow', 'peer', 'pair', 'poor', 'tour', 'pat',
+            'bat', 'tap', 'dip', 'kick', 'gap', 'fan', 'van', 'think',
+            'that', 'sip', 'zip', 'ship', 'measure', 'chip', 'jump', 'map',
+            'nap', 'sing', 'lap', 'rap', 'wet', 'yet', 'hop', 'hello'
+        ];
+
+        // Intermediate: Common difficult words
+        const intermediateWords = [
+            'accessible', 'accidentally', 'accommodate', 'acquire', 'amateur',
+            'anonymous', 'apparently', 'appearance', 'argument', 'beautiful',
+            'beginning', 'believe', 'borough', 'business', 'calendar',
+            'Caribbean', 'cemetery', 'chauffeur', 'colleague', 'colonel',
+            'comfortable', 'committee', 'completely', 'conscience', 'conscientious',
+            'conscious', 'definitely', 'develop', 'difference', 'disappear',
+            'disappoint', 'discipline', 'embarrass', 'environment', 'exaggerate',
+            'exceed', 'excellent', 'existence', 'experience', 'familiar',
+            'fascinate', 'february', 'fiery', 'foreign', 'foreseeable',
+            'forfeit', 'forty', 'gauge', 'generally', 'government',
+            'grammar', 'guarantee', 'guerrilla', 'harass', 'height',
+            'hierarchy', 'humorous', 'hypothesis', 'idiosyncrasy', 'ignorance',
+            'immediate', 'independent', 'indispensable', 'intelligence', 'interesting',
+            'interrupt', 'irresistible', 'jewelry', 'judgment', 'kernel',
+            'knowledge', 'leisure', 'length', 'library', 'license',
+            'lieutenant', 'maintenance', 'maneuver', 'medieval', 'millennium',
+            'miniature', 'minuscule', 'mischievous', 'misspell', 'mortgage',
+            'necessary', 'neighbor', 'neither', 'noticeable', 'occasion',
+            'occasionally', 'occurred', 'occurrence', 'official', 'parliament',
+            'particularly', 'pastime', 'perseverance', 'personnel', 'piece',
+            'playwright', 'possession', 'practically', 'precede', 'principal',
+            'principle', 'privilege', 'probably', 'pronunciation', 'psychiatric',
+            'publicly', 'questionnaire', 'receive', 'recommend', 'reference',
+            'referred', 'relevant', 'repetition', 'restaurant', 'rhyme',
+            'rhythm', 'schedule', 'scissors', 'secretary', 'seize',
+            'separate', 'sergeant', 'similar', 'sincerely', 'sophisticated',
+            'souvenir', 'successful', 'supersede', 'surprise', 'susceptible',
+            'temperature', 'temporary', 'tendency', 'therefore', 'thorough',
+            'thought', 'threshold', 'throughout', 'tomorrow', 'tongue',
+            'truly', 'twelfth', 'tyranny', 'unanimous', 'undoubtedly',
+            'unforeseen', 'unfortunately', 'unique', 'until', 'unusual',
+            'vacuum', 'valuable', 'vegetable', 'vehicle', 'vicious',
+            'visible', 'Wednesday', 'weird', 'wherever', 'wholly',
+            'withhold', 'yacht', 'accomplice', 'acknowledge', 'acquaintance',
+            'adequate', 'aerial', 'aggravate', 'aggregate', 'algorithm',
+            'alignment', 'allotted', 'ambiguous', 'analogous', 'analysis',
+            'anecdote', 'annual', 'appreciate', 'appropriate', 'arbitrary',
+            'architect', 'arctic', 'ascertain', 'athletic', 'atmosphere',
+            'authentic', 'auxiliary', 'bachelor', 'bankrupt', 'beneficial',
+            'boundary', 'bureaucracy', 'campaign', 'candidate', 'capability',
+            'capacity', 'catastrophe', 'category', 'challenge', 'changeable',
+            'characteristic', 'chocolate', 'cholesterol', 'circumstance', 'civilian',
+            'collectible', 'column', 'coming', 'commission', 'committed',
+            'comparison', 'concede', 'conceive', 'concentrate', 'conception',
+            'condemn', 'conducive', 'connoisseur', 'consensus', 'consequently'
+        ];
+
+        // Advanced: Very difficult and rare words
+        const advancedWords = [
+            'anemone', 'antithesis', 'bourgeois', 'cacophony', 'cavalry',
+            'chiaroscuro', 'choir', 'quinoa', 'colonel', 'connoisseur',
+            'deteriorate', 'epitome', 'espresso', 'etiquette', 'exacerbate',
+            'façade', 'faux', 'genre', 'gnocchi', 'hors',
+            'hyperbole', 'idiosyncrasy', 'ignominious', 'imperceptible', 'innocuous',
+            'isthmus', 'jalapeno', 'juxtapose', 'lackadaisical', 'liable',
+            'liaison', 'lineage', 'mauve', 'mischievous', 'mnemonic',
+            'niece', 'nihilism', 'nuptial', 'obfuscate', 'onomatopoeia',
+            'panacea', 'paradigm', 'philanthropist', 'philosopher', 'plateau',
+            'plethora', 'prerogative', 'prestigious', 'pronunciation', 'proselytize',
+            'protégé', 'pseudonym', 'psychiatrist', 'psychologist', 'quinoa',
+            'rapprochement', 'remuneration', 'rendezvous', 'repertoire', 'restaurant',
+            'rhinoceros', 'sanguine', 'schadenfreude', 'serendipity', 'silhouette',
+            'subtle', 'succinct', 'surgeon', 'synecdoche', 'synonymous',
+            'tertiary', 'thorough', 'tsunami', 'ubiquitous', 'unconscious',
+            'vehement', 'vermilion', 'vicarious', 'victual', 'vivacious',
+            'worcestershire', 'yacht', 'zealous', 'zenith', 'zoology',
+            'algorithm', 'amalgamation', 'ambiguity', 'anemone', 'anesthesia',
+            'apparition', 'archaeological', 'aristocracy', 'asphyxiation', 'asymmetrical',
+            'auxiliary', 'benediction', 'biodiversity', 'blasphemous', 'boutique',
+            'camaraderie', 'capillary', 'categorically', 'cautionary', 'centrifugal',
+            'chiropractor', 'circumstances', 'claustrophobia', 'clandestine', 'cognizant',
+            'cohesiveness', 'commemorative', 'commiserate', 'CompatibilityError', 'comprehensible',
+            'conciliatory', 'configuration', 'conscientious', 'constituencies', 'contemporary',
+            'contentious', 'contradictory', 'controversial', 'corroborate', 'defibrillator',
+            'deleterious', 'deliberate', 'delineate', 'denomination', 'depreciation',
+            'deterioration', 'dichotomy', 'dilapidated', 'discrepancy', 'disillusionment',
+            'echolocation', 'ecclesiastical', 'efficacious', 'egalitarian', 'electromagnetic',
+            'eleemosynary', 'emancipation', 'empirical', 'encephalitis', 'encyclopedia',
+            'entrepreneurial', 'ephemeral', 'epistemology', 'equivocal', 'ergonomic',
+            'erudite', 'esoteric', 'ethereal', 'etymological', 'euphemism',
+            'euthanasia', 'evangelical', 'evocative', 'exorbitant', 'expeditious',
+            'exponential', 'extrapolate', 'facetious', 'fallacious', 'facsimile',
+            'physiotherapy', 'picturesque', 'prioritization', 'prophylactic', 'reciprocity'
+        ];
+
+        const wordSets = {
+            beginner: beginnerWords,
+            intermediate: intermediateWords,
+            advanced: advancedWords
+        };
+
+        let currentMode = 'beginner';
+        let words = wordSets[currentMode];
+        let currentWord = '';
+        let recognition;
+        let remainingWords = [...words];
+        let usedWords = [];
+        let skippedWords = [];
+        let hasAttempted = false;
+        let soundEnabled = true;
+
+        // Check if browser supports speech recognition
+        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
+            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+            recognition = new SpeechRecognition();
+            recognition.lang = 'en-US';
+            recognition.continuous = false;
+            recognition.interimResults = false;
+        } else {
+            document.getElementById('feedback').textContent = 'Speech recognition not supported in this browser. Try Chrome.';
+            document.getElementById('recordBtn').disabled = true;
+        }
+
+        const recordBtn = document.getElementById('recordBtn');
+        const nextBtn = document.getElementById('nextBtn');
+        const helpBtn = document.getElementById('helpBtn');
+        const wordDisplay = document.getElementById('wordDisplay');
+        const feedback = document.getElementById('feedback');
+        const heard = document.getElementById('heard');
+        const skippedList = document.getElementById('skippedList');
+        const clearAllBtn = document.getElementById('clearAllBtn');
+
+        function updateSkippedList() {
+            if (skippedWords.length === 0) {
+                skippedList.innerHTML = '<div class="sidebar-empty">No words skipped yet</div>';
+                clearAllBtn.disabled = true;
+            } else {
+                skippedList.innerHTML = skippedWords.map(word => `
+                    <div class="skipped-word">
+                        <span>${word}</span>
+                        <button onclick="removeSkipped('${word}')" title="Remove">×</button>
+                    </div>
+                `).join('');
+                clearAllBtn.disabled = false;
+            }
+        }
+
+        window.removeSkipped = (word) => {
+            skippedWords = skippedWords.filter(w => w !== word);
+            updateSkippedList();
+        };
+
+        clearAllBtn.addEventListener('click', () => {
+            skippedWords = [];
+            updateSkippedList();
+        });
+
+        // Mode selection
+        const modeBtns = document.querySelectorAll('.mode-btn');
+        modeBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // Update active state
+                modeBtns.forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Change mode
+                currentMode = btn.dataset.mode;
+                words = wordSets[currentMode];
+
+                // Reset everything
+                remainingWords = [...words];
+                usedWords = [];
+                skippedWords = [];
+                currentWord = '';
+                hasAttempted = false;
+
+                // Clear UI
+                wordDisplay.textContent = 'Click "Next Word" to start';
+                feedback.textContent = '';
+                feedback.className = 'feedback';
+                heard.textContent = '';
+                helpBtn.disabled = true;
+                updateSkippedList();
+            });
+        });
+
+        nextBtn.addEventListener('click', () => {
+            // If moving to next word without correct pronunciation, mark as skipped
+            if (currentWord && currentWord !== 'Click "Next Word" to start') {
+                const wasCorrect = feedback.classList.contains('correct');
+                if (!wasCorrect && !skippedWords.includes(currentWord)) {
+                    skippedWords.push(currentWord);
+                    updateSkippedList();
+                }
+            }
+
+            // Reset attempt flag
+            hasAttempted = false;
+
+            // Reset if all words have been used
+            if (remainingWords.length === 0) {
+                remainingWords = [...words];
+                usedWords = [];
+            }
+
+            // Pick a random word from remaining words
+            const randomIndex = Math.floor(Math.random() * remainingWords.length);
+            currentWord = remainingWords[randomIndex];
+
+            // Move word from remaining to used
+            remainingWords.splice(randomIndex, 1);
+            usedWords.push(currentWord);
+
+            wordDisplay.textContent = currentWord;
+            feedback.textContent = '';
+            feedback.className = 'feedback';
+            heard.textContent = '';
+
+            // Enable help button when word is selected
+            helpBtn.disabled = false;
+        });
+
+        helpBtn.addEventListener('click', () => {
+            if (currentWord) {
+                const searchQuery = encodeURIComponent(`how to pronounce ${currentWord}`);
+                window.open(`https://www.google.com/search?q=${searchQuery}`, '_blank');
+            }
+        });
+
+        let audioContext;
+        let analyser;
+        let microphone;
+        let animationId;
+
+        recordBtn.addEventListener('click', async () => {
+            if (!currentWord) {
+                feedback.textContent = 'Please click "Next Word" first!';
+                return;
+            }
+
+            feedback.textContent = '';
+            heard.textContent = '';
+            recordBtn.classList.add('recording');
+            recordBtn.textContent = '🎤 Listening...';
+
+            // Start audio visualization
+            try {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                audioContext = new (window.AudioContext || window.webkitAudioContext)();
+                analyser = audioContext.createAnalyser();
+                microphone = audioContext.createMediaStreamSource(stream);
+
+                analyser.fftSize = 256;
+                analyser.smoothingTimeConstant = 0.8;
+                microphone.connect(analyser);
+
+                visualizeSound();
+            } catch (err) {
+                console.log('Audio visualization not available:', err);
+            }
+
+            recognition.start();
+        });
+
+        function visualizeSound() {
+            const dataArray = new Uint8Array(analyser.frequencyBinCount);
+
+            function animate() {
+                analyser.getByteFrequencyData(dataArray);
+                const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
+
+                if (average > 20) {
+                    wordDisplay.classList.add('pulsing');
+                    setTimeout(() => wordDisplay.classList.remove('pulsing'), 100);
+                }
+
+                if (recordBtn.classList.contains('recording')) {
+                    animationId = requestAnimationFrame(animate);
+                }
+            }
+
+            animate();
+        }
+
+        function stopVisualization() {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+            }
+            if (microphone) {
+                microphone.disconnect();
+                microphone.mediaStream.getTracks().forEach(track => track.stop());
+            }
+            if (audioContext) {
+                audioContext.close();
+            }
+        }
+
+        // Create success sound using Web Audio API
+        function playSuccessSound() {
+            if (!soundEnabled) return;
+
+            const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
+            oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
+            oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
+
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
+
+            oscillator.start(audioContext.currentTime);
+            oscillator.stop(audioContext.currentTime + 0.4);
+        }
+
+        recognition.onresult = (event) => {
+            const transcript = event.results[0][0].transcript.toLowerCase().trim();
+            heard.textContent = `I heard: "${transcript}"`;
+            hasAttempted = true;
+
+            if (transcript === currentWord.toLowerCase()) {
+                feedback.textContent = '✓ Correct!';
+                feedback.className = 'feedback correct';
+
+                // Trigger celebration animation
+                wordDisplay.classList.add('celebrate');
+                setTimeout(() => wordDisplay.classList.remove('celebrate'), 600);
+
+                // Play success sound
+                playSuccessSound();
+
+                // Remove from skipped list if it was there
+                if (skippedWords.includes(currentWord)) {
+                    skippedWords = skippedWords.filter(w => w !== currentWord);
+                    updateSkippedList();
+                }
+            } else {
+                feedback.textContent = '✗ Try again';
+                feedback.className = 'feedback incorrect';
+            }
+        };
+
+        recognition.onend = () => {
+            recordBtn.classList.remove('recording');
+            recordBtn.textContent = '🎤 Record';
+            stopVisualization();
+        };
+
+        recognition.onerror = (event) => {
+            recordBtn.classList.remove('recording');
+            recordBtn.textContent = '🎤 Record';
+            feedback.textContent = 'Error: ' + event.error;
+            feedback.className = 'feedback incorrect';
+            stopVisualization();
+        };
+
+        // Sound toggle
+        const soundToggle = document.getElementById('soundToggle');
+        const savedSound = localStorage.getItem('sound');
+
+        if (savedSound === 'off') {
+            soundEnabled = false;
+            soundToggle.textContent = '🔇';
+            soundToggle.classList.add('muted');
+        }
+
+        soundToggle.addEventListener('click', () => {
+            soundEnabled = !soundEnabled;
+            soundToggle.textContent = soundEnabled ? '🔊' : '🔇';
+            soundToggle.classList.toggle('muted');
+            localStorage.setItem('sound', soundEnabled ? 'on' : 'off');
+        });
+
+        // Dark mode toggle
+        const themeToggle = document.getElementById('themeToggle');
+        const savedTheme = localStorage.getItem('theme');
+
+        if (savedTheme === 'dark') {
+            document.body.classList.add('dark-mode');
+            themeToggle.textContent = '☀️';
+        }
+
+        themeToggle.addEventListener('click', () => {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            themeToggle.textContent = isDark ? '☀️' : '🌙';
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        });
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.key === ' ' || e.code === 'Space') {
+                e.preventDefault();
+                recordBtn.click();
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                nextBtn.click();
+            }
+        });
+    </script>
+</body>
+</html>
