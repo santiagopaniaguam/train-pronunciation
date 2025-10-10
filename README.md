@@ -24,6 +24,7 @@ A simple, lightweight web application to help you practice pronouncing difficult
 - Modern web browser (Chrome or Edge recommended for best speech recognition support)
 - Microphone access
 - Internet connection (for Google search feature)
+- Python installed on your computer
 
 ## Installation & Usage
 
