@@ -15,6 +15,7 @@
     --info-bg: #f7fafc;
     --shadow: rgba(0, 0, 0, 0.1);
     --shadow-hover: rgba(0, 0, 0, 0.15);
+    --modal-bg: rgba(0, 0, 0, 0.5);
 }
 
         body.dark-mode {
@@ -27,6 +28,7 @@
             --info-bg: #1a202c;
             --shadow: rgba(0, 0, 0, 0.4);
             --shadow-hover: rgba(0, 0, 0, 0.6);
+            --modal-bg: rgba(0, 0, 0, 0.8);
         }
 
         * {
@@ -145,12 +147,106 @@
             font-size: 1.2rem;
             padding: 1rem 0.5rem;
             transition: all 0.2s ease;
-	    
         }
 
         .skipped-word button:hover {
             color: #f56565;
             transform: scale(1.2);
+        }
+
+        /* Modal Styles */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: var(--modal-bg);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.active {
+            display: block;
+        }
+
+        .modal-content {
+            position: relative;
+            background: var(--container-bg);
+            margin: 2% auto;
+            padding: 0;
+            width: 90%;
+            max-width: 900px;
+            height: 85vh;
+            border-radius: 24px;
+            box-shadow: 0 24px 80px var(--shadow);
+            animation: slideIn 0.3s ease;
+        }
+
+        .modal-header {
+            padding: 1.5rem;
+            background: var(--info-bg);
+            border-radius: 24px 24px 0 0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--shadow);
+        }
+
+        .modal-title {
+            color: var(--text-primary);
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .modal-close {
+            background: linear-gradient(135deg, #f56565 0%, #e53e3e 100%);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1.5rem;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-close:hover {
+            transform: scale(1.1) rotate(90deg);
+        }
+
+        .modal-body {
+            padding: 1rem;
+            height: calc(100% - 80px);
+            overflow: hidden;
+        }
+
+        .pronunciation-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+            border-radius: 0 0 24px 24px;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
         }
 
         .theme-toggle, .sound-toggle {
@@ -365,17 +461,6 @@
             50% { opacity: 0.8; transform: scale(1.02); }
         }
 
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            to {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
-
         @keyframes celebrate {
             0%, 100% { transform: scale(1); }
             25% { transform: scale(1.1); }
@@ -428,6 +513,12 @@
             .sidebar {
                 padding: 1.5rem;
             }
+
+            .modal-content {
+                width: 95%;
+                height: 90vh;
+                margin: 5% auto;
+            }
         }
     </style>
 </head>
@@ -460,6 +551,19 @@
             <button class="clear-all-btn" id="clearAllBtn" disabled>Clear All</button>
         </div>
         <div id="skippedList" class="sidebar-empty">No words skipped yet</div>
+    </div>
+
+    <!-- Modal for pronunciation help -->
+    <div id="pronunciationModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 class="modal-title">Pronunciation Guide</h2>
+                <button class="modal-close" id="closeModal">×</button>
+            </div>
+            <div class="modal-body">
+                <iframe id="pronunciationFrame" class="pronunciation-iframe" src=""></iframe>
+            </div>
+        </div>
     </div>
 
     <script>
@@ -508,18 +612,7 @@
             'unforeseen', 'unfortunately', 'unique', 'until', 'unusual',
             'vacuum', 'valuable', 'vegetable', 'vehicle', 'vicious',
             'visible', 'Wednesday', 'weird', 'wherever', 'wholly',
-            'withhold', 'yacht', 'accomplice', 'acknowledge', 'acquaintance',
-            'adequate', 'aerial', 'aggravate', 'aggregate', 'algorithm',
-            'alignment', 'allotted', 'ambiguous', 'analogous', 'analysis',
-            'anecdote', 'annual', 'appreciate', 'appropriate', 'arbitrary',
-            'architect', 'arctic', 'ascertain', 'athletic', 'atmosphere',
-            'authentic', 'auxiliary', 'bachelor', 'bankrupt', 'beneficial',
-            'boundary', 'bureaucracy', 'campaign', 'candidate', 'capability',
-            'capacity', 'catastrophe', 'category', 'challenge', 'changeable',
-            'characteristic', 'chocolate', 'cholesterol', 'circumstance', 'civilian',
-            'collectible', 'column', 'coming', 'commission', 'committed',
-            'comparison', 'concede', 'conceive', 'concentrate', 'conception',
-            'condemn', 'conducive', 'connoisseur', 'consensus', 'consequently'
+            'withhold', 'yacht'
         ];
 
         // Advanced: Very difficult and rare words
@@ -540,24 +633,7 @@
             'subtle', 'succinct', 'surgeon', 'synecdoche', 'synonymous',
             'tertiary', 'thorough', 'tsunami', 'ubiquitous', 'unconscious',
             'vehement', 'vermilion', 'vicarious', 'victual', 'vivacious',
-            'worcestershire', 'yacht', 'zealous', 'zenith', 'zoology',
-            'algorithm', 'amalgamation', 'ambiguity', 'anemone', 'anesthesia',
-            'apparition', 'archaeological', 'aristocracy', 'asphyxiation', 'asymmetrical',
-            'auxiliary', 'benediction', 'biodiversity', 'blasphemous', 'boutique',
-            'camaraderie', 'capillary', 'categorically', 'cautionary', 'centrifugal',
-            'chiropractor', 'circumstances', 'claustrophobia', 'clandestine', 'cognizant',
-            'cohesiveness', 'commemorative', 'commiserate', 'CompatibilityError', 'comprehensible',
-            'conciliatory', 'configuration', 'conscientious', 'constituencies', 'contemporary',
-            'contentious', 'contradictory', 'controversial', 'corroborate', 'defibrillator',
-            'deleterious', 'deliberate', 'delineate', 'denomination', 'depreciation',
-            'deterioration', 'dichotomy', 'dilapidated', 'discrepancy', 'disillusionment',
-            'echolocation', 'ecclesiastical', 'efficacious', 'egalitarian', 'electromagnetic',
-            'eleemosynary', 'emancipation', 'empirical', 'encephalitis', 'encyclopedia',
-            'entrepreneurial', 'ephemeral', 'epistemology', 'equivocal', 'ergonomic',
-            'erudite', 'esoteric', 'ethereal', 'etymological', 'euphemism',
-            'euthanasia', 'evangelical', 'evocative', 'exorbitant', 'expeditious',
-            'exponential', 'extrapolate', 'facetious', 'fallacious', 'facsimile',
-            'physiotherapy', 'picturesque', 'prioritization', 'prophylactic', 'reciprocity'
+            'worcestershire', 'yacht', 'zealous', 'zenith', 'zoology'
         ];
 
         const wordSets = {
@@ -596,6 +672,9 @@
         const heard = document.getElementById('heard');
         const skippedList = document.getElementById('skippedList');
         const clearAllBtn = document.getElementById('clearAllBtn');
+        const modal = document.getElementById('pronunciationModal');
+        const closeModal = document.getElementById('closeModal');
+        const pronunciationFrame = document.getElementById('pronunciationFrame');
 
         function updateSkippedList() {
             if (skippedWords.length === 0) {
@@ -687,10 +766,41 @@
             helpBtn.disabled = false;
         });
 
+        // Help button with iframe modal
         helpBtn.addEventListener('click', () => {
-            if (currentWord) {
-                const searchQuery = encodeURIComponent(`how to pronounce ${currentWord}`);
-                window.open(`https://www.google.com/search?q=${searchQuery}`, '_blank');
+            if (currentWord && currentWord !== 'Click "Next Word" to start') {
+                // Use Google Dictionary search URL for pronunciation
+                const searchUrl = `https://www.google.com/search?igu=1&q=pronunciation+of+${encodeURIComponent(currentWord)}`;
+                
+                // Alternative options you can use:
+                // Merriam-Webster: `https://www.merriam-webster.com/dictionary/${encodeURIComponent(currentWord)}`
+                // Cambridge Dictionary: `https://dictionary.cambridge.org/dictionary/english/${encodeURIComponent(currentWord)}`
+                // Forvo: `https://forvo.com/word/${encodeURIComponent(currentWord)}/`
+                
+                pronunciationFrame.src = searchUrl;
+                modal.classList.add('active');
+            }
+        });
+
+        // Close modal
+        closeModal.addEventListener('click', () => {
+            modal.classList.remove('active');
+            pronunciationFrame.src = ''; // Clear iframe when closing
+        });
+
+        // Close modal when clicking outside
+        window.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                modal.classList.remove('active');
+                pronunciationFrame.src = '';
+            }
+        });
+
+        // Close modal with Escape key
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape' && modal.classList.contains('active')) {
+                modal.classList.remove('active');
+                pronunciationFrame.src = '';
             }
         });
 
@@ -700,7 +810,7 @@
         let animationId;
 
         recordBtn.addEventListener('click', async () => {
-            if (!currentWord) {
+            if (!currentWord || currentWord === 'Click "Next Word" to start') {
                 feedback.textContent = 'Please click "Next Word" first!';
                 return;
             }
@@ -774,9 +884,9 @@
             gainNode.connect(audioContext.destination);
 
             oscillator.type = 'sine';
-            oscillator.frequency.setValueAtTime(523.25, audioContext.currentTime); // C5
-            oscillator.frequency.setValueAtTime(659.25, audioContext.currentTime + 0.1); // E5
-            oscillator.frequency.setValueAtTime(783.99, audioContext.currentTime + 0.2); // G5
+            oscillator.frequency.setValueAtTime(503.25, audioContext.currentTime); // C5
+            oscillator.frequency.setValueAtTime(639.25, audioContext.currentTime + 0.1); // E5
+            oscillator.frequency.setValueAtTime(763.99, audioContext.currentTime + 0.2); // G5
 
             gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
             gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.4);
@@ -861,6 +971,11 @@
 
         // Keyboard shortcuts
         document.addEventListener('keydown', (e) => {
+            // Don't trigger shortcuts when modal is open
+            if (modal.classList.contains('active')) {
+                return;
+            }
+            
             if (e.key === ' ' || e.code === 'Space') {
                 e.preventDefault();
                 recordBtn.click();
